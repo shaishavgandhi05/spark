@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         sparkView = findViewById(R.id.sparkview);
 
         adapter = new RandomizedAdapter();
-        sparkView.setAdapter(adapter);
+        sparkView.addAdapter(adapter);
         sparkView.setScrubListener(new SparkView.OnScrubListener() {
             @Override
             public void onScrubbed(Object value) {
@@ -63,6 +63,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 adapter.randomize();
+            }
+        });
+
+        findViewById(R.id.add_line_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sparkView.addAdapter(new RandomizedAdapter());
             }
         });
 

@@ -106,7 +106,7 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
     private final Path scrubLinePath = new Path();
 
     // adapter
-    private SparkAdapter adapter;
+    private List<SparkAdapter> adapters;
 
     // misc fields
     private ScaleHelper scaleHelper;
@@ -216,63 +216,66 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
      * Populates the {@linkplain #sparkPath} with points
      */
     private void populatePath() {
-        if (adapter == null) return;
+        if (adapters == null || adapters.isEmpty()) return;
         if (getWidth() == 0 || getHeight() == 0) return;
 
-        final int adapterCount = adapter.getCount();
-
-        // to draw anything, we need 2 or more points
-        if (adapterCount < 2) {
-            clearData();
-            return;
-        }
-
-        scaleHelper = new ScaleHelper(adapter, contentRect, lineWidth, isFillInternal());
-
-        xPoints.clear();
-        yPoints.clear();
-
-        // make our main graph path
         sparkPath.reset();
-        for (int i = 0; i < adapterCount; i++) {
-            final float x = scaleHelper.getX(adapter.getX(i));
-            final float y = scaleHelper.getY(adapter.getY(i));
+        for (SparkAdapter adapter: adapters) {
+            final int adapterCount = adapter.getCount();
 
-            // points to render graphic
-            // get points to animate
-            xPoints.add(x);
-            yPoints.add(y);
-
-            if (i == 0) {
-                sparkPath.moveTo(x, y);
-            } else {
-                sparkPath.lineTo(x, y);
+            // to draw anything, we need 2 or more points
+            if (adapterCount < 2) {
+                clearData();
+                return;
             }
 
-        }
+            scaleHelper = new ScaleHelper(adapter, contentRect, lineWidth, isFillInternal());
 
-        // if we're filling the graph in, close the path's circuit
-        final Float fillEdge = getFillEdge();
-        if (fillEdge != null) {
-            final float lastX = scaleHelper.getX(adapter.getCount() - 1);
-            // line up or down to the fill edge
-            sparkPath.lineTo(lastX, fillEdge);
-            // line straight left to far edge of the view
-            sparkPath.lineTo(getPaddingStart(), fillEdge);
-            // closes line back on the first point
-            sparkPath.close();
-        }
+            xPoints.clear();
+            yPoints.clear();
 
-        // make our base line path
-        baseLinePath.reset();
-        if (adapter.hasBaseLine()) {
-            float scaledBaseLine = scaleHelper.getY(adapter.getBaseLine());
-            baseLinePath.moveTo(0, scaledBaseLine);
-            baseLinePath.lineTo(getWidth(), scaledBaseLine);
-        }
+            // make our main graph path
+//            sparkPath.reset();
+            for (int i = 0; i < adapterCount; i++) {
+                final float x = scaleHelper.getX(adapter.getX(i));
+                final float y = scaleHelper.getY(adapter.getY(i));
 
-        renderPath.reset();
-        renderPath.addPath(sparkPath);
+                // points to render graphic
+                // get points to animate
+                xPoints.add(x);
+                yPoints.add(y);
+
+                if (i == 0) {
+                    sparkPath.moveTo(x, y);
+                } else {
+                    sparkPath.lineTo(x, y);
+                }
+
+            }
+
+            // if we're filling the graph in, close the path's circuit
+            final Float fillEdge = getFillEdge();
+            if (fillEdge != null) {
+                final float lastX = scaleHelper.getX(adapter.getCount() - 1);
+                // line up or down to the fill edge
+                sparkPath.lineTo(lastX, fillEdge);
+                // line straight left to far edge of the view
+                sparkPath.lineTo(getPaddingStart(), fillEdge);
+                // closes line back on the first point
+                sparkPath.close();
+            }
+
+            // make our base line path
+            baseLinePath.reset();
+            if (adapter.hasBaseLine()) {
+                float scaledBaseLine = scaleHelper.getY(adapter.getBaseLine());
+                baseLinePath.moveTo(0, scaledBaseLine);
+                baseLinePath.lineTo(getWidth(), scaledBaseLine);
+            }
+
+            renderPath.reset();
+            renderPath.addPath(sparkPath);
+        }
 
         invalidate();
     }
@@ -695,20 +698,21 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
     /**
      * Get the backing {@link SparkAdapter}
      */
-    public SparkAdapter getAdapter() {
-        return adapter;
-    }
+//    public SparkAdapter getAdapter() {
+//        return adapter;
+//    }
 
     /**
      * Sets the backing {@link SparkAdapter} to generate the points to be graphed
      */
-    public void setAdapter(SparkAdapter adapter) {
-        if (this.adapter != null) {
-            this.adapter.unregisterDataSetObserver(dataSetObserver);
+    public void addAdapter(SparkAdapter adapter) {
+        if (this.adapters == null) {
+            adapters = new ArrayList<>();
         }
-        this.adapter = adapter;
-        if (this.adapter != null) {
-            this.adapter.registerDataSetObserver(dataSetObserver);
+        this.adapters.add(adapter);
+        // TODO: Let's deal with dataSetObserver later
+        if (adapter != null) {
+            adapter.registerDataSetObserver(dataSetObserver);
         }
         populatePath();
     }
@@ -880,14 +884,15 @@ public class SparkView extends View implements ScrubGestureDetector.ScrubListene
 
     @Override
     public void onScrubbed(float x, float y) {
-        if (adapter == null || adapter.getCount() == 0) return;
-        if (scrubListener != null) {
-            getParent().requestDisallowInterceptTouchEvent(true);
-            int index = getNearestIndex(xPoints, x);
-            if (scrubListener != null) {
-                scrubListener.onScrubbed(adapter.getItem(index));
-            }
-        }
+        // TODO: Make scrubbing work
+//        if (adapter == null || adapter.getCount() == 0) return;
+//        if (scrubListener != null) {
+//            getParent().requestDisallowInterceptTouchEvent(true);
+//            int index = getNearestIndex(xPoints, x);
+//            if (scrubListener != null) {
+//                scrubListener.onScrubbed(adapter.getItem(index));
+//            }
+//        }
 
         setScrubLine(x);
     }
