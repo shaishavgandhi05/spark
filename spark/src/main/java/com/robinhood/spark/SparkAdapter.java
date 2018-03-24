@@ -18,7 +18,10 @@ package com.robinhood.spark;
 
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
+import android.support.annotation.ColorInt;
 import android.support.annotation.VisibleForTesting;
 
 /**
@@ -28,10 +31,15 @@ import android.support.annotation.VisibleForTesting;
 public abstract class SparkAdapter {
     private final DataSetObservable observable = new DataSetObservable();
 
+    private Path sparkPath = new Path();
+    private Paint sparkLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
     /**
      * @return the number of points to be drawn
      */
     public abstract int getCount();
+
+    public abstract @ColorInt int getLineColor();
 
     /**
      * @return the object at the given index
@@ -141,4 +149,23 @@ public abstract class SparkAdapter {
     public final void unregisterDataSetObserver(DataSetObserver observer) {
         observable.unregisterObserver(observer);
     }
+
+    public void setSparkPath(Path sparkPath) {
+        this.sparkPath = sparkPath;
+    }
+
+    public Path getSparkPath() {
+        return sparkPath;
+    }
+
+    public Paint getLinePaint() {
+        int color = getLineColor();
+
+        sparkLinePaint.setStyle(Paint.Style.STROKE);
+        sparkLinePaint.setColor(color);
+        sparkLinePaint.setStrokeCap(Paint.Cap.ROUND);
+
+        return sparkLinePaint;
+    }
+
 }
