@@ -16,6 +16,7 @@
 
 package com.robinhood.spark.sample;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -46,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
         sparkView = findViewById(R.id.sparkview);
 
-        adapter = new RandomizedAdapter();
+        adapter = new RandomizedAdapter(this);
         sparkView.addAdapter(adapter);
         sparkView.setScrubListener(new SparkView.OnScrubListener() {
             @Override
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.add_line_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sparkView.addAdapter(new RandomizedAdapter());
+                sparkView.addAdapter(new RandomizedAdapter(MainActivity.this));
             }
         });
 
@@ -126,11 +127,13 @@ public class MainActivity extends AppCompatActivity {
     public static class RandomizedAdapter extends SparkAdapter {
         private final float[] yData;
         private final Random random;
+        private Context context;
 
-        public RandomizedAdapter() {
+        public RandomizedAdapter(Context context) {
             random = new Random();
             yData = new float[50];
             randomize();
+            this.context = context;
         }
 
         public void randomize() {
@@ -138,6 +141,11 @@ public class MainActivity extends AppCompatActivity {
                 yData[i] = random.nextFloat();
             }
             notifyDataSetChanged();
+        }
+
+        @Override
+        public int getLineColor() {
+            return context.getResources().getColor(R.color.black);
         }
 
         @Override
